@@ -1,0 +1,54 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function App() {
+  const [data, setData] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    axios.get('https://api.rootnet.in/covid19-in/stats/latest')
+      .then(response => setData(response.data))
+      .catch(error => console.log(error));
+  }, []);
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredData = data && data.data.regional.filter((region) => {
+    return region.loc.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  return (
+    <div className="App">
+      <h1>COVID-19 Stats</h1>
+      <input type="text" value={searchTerm} onChange={handleSearch} placeholder="Search by region" />
+      {filteredData ? (
+        <table>
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Total cases</th>
+              <th>Total deaths</th>
+              <th>Total recovered</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.map((region) => (
+              <tr key={region.loc}>
+                <td>{region.loc}</td>
+                <td>{region.totalConfirmed}</td>
+                <td>{region.deaths}</td>
+                <td>{region.discharged}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+  );
+}
+
+export default App;
